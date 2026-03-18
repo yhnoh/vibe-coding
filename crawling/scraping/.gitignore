@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# 가상환경
+.venv/
+
+# 크롤링 결과물 (필요 시 제외)
+*.json
+*.csv
+*.xml
+
+# Scrapy 캐시
+.scrapy/
+
+ # IDE
+.idea/
+.vscode/
+
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 환경변수
+.env
+.env.*
