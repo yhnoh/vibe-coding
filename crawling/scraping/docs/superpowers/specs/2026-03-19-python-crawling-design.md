@@ -115,6 +115,39 @@ CMD ["crawl", "api_call"]
 6. 처리 완료 기록
 ```
 
+## 크롤링 대상 URL 목록
+
+### Naver Sports KBO
+
+| 데이터 | URL | 비고 |
+|--------|-----|------|
+| 경기일정 | `https://m.sports.naver.com/kbaseball/schedule/index?category=kbo&date={yyyy-MM-dd}` | 날짜별 경기 일정/결과 |
+| 팀정보 | `https://m.sports.naver.com/kbaseball/record/kbo?tab=teamRank` | 팀 순위 |
+| 팀기록 | `https://m.sports.naver.com/kbaseball/record/kbo?seasonCode={yyyy}&tab=teamRecord` | 팀별 시즌 성적 |
+| 타자목록 | `https://m.sports.naver.com/kbaseball/record/kbo?tab=hitter` | 전체 타자 성적 |
+| 팀별 타자목록 | `https://m.sports.naver.com/kbaseball/record/kbo?tab=hitter&teamCode={teamCode}` | 팀별 타자 성적 |
+| 투수목록 | `https://m.sports.naver.com/kbaseball/record/kbo?tab=pitcher` | 전체 투수 성적 |
+| 팀별 투수목록 | `https://m.sports.naver.com/kbaseball/record/kbo?tab=pitcher&teamCode={teamCode}` | 팀별 투수 성적 |
+
+**참고:** 위 URL은 웹 페이지 URL이며, 실제 데이터는 JS 렌더링 후 내부 API(`api-gw.sports.naver.com`)를 호출하여 가져온다. `api_capture` 스파이더로 각 페이지의 실제 API 엔드포인트를 탐지해야 한다.
+
+### 팀 코드 목록
+
+| 팀명 | teamCode |
+|------|----------|
+| KIA 타이거즈 | KIA |
+| 삼성 라이온즈 | SS |
+| LG 트윈스 | LG |
+| 두산 베어스 | OB |
+| KT 위즈 | KT |
+| SSG 랜더스 | SK |
+| 롯데 자이언츠 | LT |
+| 한화 이글스 | HH |
+| NC 다이노스 | NC |
+| 키움 히어로즈 | WO |
+
+> 팀 코드는 네이버 스포츠에서 사용하는 코드이며, 실제 코드는 api_capture 실행 후 확인 필요
+
 ## 데이터 소스 확장
 
 외부 API 업체를 사용하게 될 경우:
@@ -123,6 +156,73 @@ CMD ["crawl", "api_call"]
 - Spring Batch는 새 파서만 추가
 
 **S3가 수집과 가공 사이의 계약(contract) 역할.**
+
+## 구현 순서
+
+API 구조를 먼저 파악한 후 코드를 설계한다.
+
+```
+1. 테스트 환경 셋업 (pytest, boto3, moto)
+2. 페이지별 API 탐지 및 응답 구조 분석
+   - api_capture로 각 페이지의 실제 API 엔드포인트 탐지
+   - 탐지된 API를 직접 호출하여 응답 JSON 구조 파악
+   - 페이지네이션, 필수 헤더, 팀 코드 등 확인
+   - 결과를 문서화
+3. 파악된 API 구조를 기반으로 constants.py, Item, Pipeline 설계 및 구현
+4. Spider 구현 (api_call, html_crawl)
+5. Dockerfile 작성
+```
+
+## 추후 구현 항목
+
+현재 범위에서는 제외하되, 향후 필요한 기능들.
+
+### api_capture 결과 저장
+- 현재: 로그 출력만 → 수동으로 constants.py에 등록
+- 개선: 탐지 결과를 파일 또는 DB에 자동 저장
+- API URL 변경 자동 감지 기능
+
+### 에러/실패 처리
+- API 호출 실패 시 재시도 전략 (Scrapy 기본 retry 외 추가 로직)
+- S3 업로드 실패 시 처리
+- IP 차단 대응 (프록시 로테이션 등)
+- 실패 알림 체계 (Slack, 이메일 등)
+
+### 크롤링 실행 기록
+- 언제, 어떤 Spider가, 어떤 URL을 크롤링했는지 추적
+- 크롤링 정상 완료 여부 확인
+
+### S3 미처리 파일 구분 (Spring Batch 쪽)
+- 이미 처리한 파일과 새 파일을 어떻게 구분할 것인가
+- 방안: 처리 완료 후 S3 파일 이동 (`raw/` → `processed/`), 또는 DB에 처리 기록
+
+### 데이터 검증
+- 빈 응답, 깨진 JSON, 에러 페이지 등 기본 검증
+- 예상 필드 누락 감지
+
+### 중복 수집 방지
+- 같은 데이터를 여러 번 크롤링할 때 S3에 중복 파일이 쌓이는 문제
+- 덮어쓰기 또는 중복 체크 전략
+
+### constants.py → DB 전환
+- 현재: CrawlTarget을 코드로 관리
+- 향후: Spring DB에서 크롤링 대상을 관리하고 Scrapy 실행 시 파라미터로 전달
+- CrawlTarget 필드를 DB 테이블 컬럼으로 매핑
+
+### 크롤링 오케스트레이션
+- 1단계 크롤링 결과(경기일정)가 2단계 크롤링의 입력이 되는 순서 관리
+- Spring Batch Step으로 오케스트레이션
+
+## 엣지 케이스
+
+| 항목 | 설명 | 대응 시점 |
+|------|------|----------|
+| 페이지네이션 | 타자/투수 목록이 여러 페이지일 수 있음 | API 탐지 시 확인 |
+| API 인증/헤더 | Referer, User-Agent 등 필수 헤더 | API 탐지 시 확인 |
+| 빈 응답 | 경기 없는 날짜, 비시즌 기간 | 기본 검증으로 처리 |
+| 팀 코드 정확성 | 실제 네이버 팀 코드와 다를 수 있음 | API 탐지 시 확인 |
+| seasonCode 동적 결정 | 매년 바뀌는 시즌 코드 | 실행 시 파라미터로 전달 |
+| API URL 변경 | 네이버 내부 API 구조 변경 가능 | 추후 자동 감지 |
 
 ## 트레이드오프
 
