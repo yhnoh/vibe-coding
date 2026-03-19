@@ -37,5 +37,17 @@ uv run playwright install chromium
 
 ```
 
+### 네이버 스포츠
+- 경기일정: https://m.sports.naver.com/kbaseball/schedule/index?category=kbo&date=2026-03-12
+- 팀정보: https://m.sports.naver.com/kbaseball/record/kbo?tab=teamRank
+- 팀기록: https://m.sports.naver.com/kbaseball/record/kbo?seasonCode=2026&tab=teamRecord
+- 타자목록: https://m.sports.naver.com/kbaseball/record/kbo?tab=hitter
+- 팀별 타자목록: https://m.sports.naver.com/kbaseball/record/kbo?tab=hitter&teamCode=KIA
+- 투수목록: https://m.sports.naver.com/kbaseball/record/kbo?tab=pitcher
+- 팀별 투수목록: https://m.sports.naver.com/kbaseball/record/kbo?tab=pitcher&teamCode=KIA
+
 
 > [Spyder > Docs](https://docs.scrapy.org/en/latest/index.html)
+
+> 
+> 

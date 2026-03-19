@@ -25,12 +25,14 @@ class CrawlTarget:
         return self.url_template.format(**merged) if merged else self.url_template
 
 
+API_DOMAIN = "https://api-gw.sports.naver.com"
 TARGETS: list[CrawlTarget] = [
     # === 경기일정 ===
     CrawlTarget(
         source="naver-sports",
         data_type="kbo-schedule",
-        url_template="https://api-gw.sports.naver.com/schedule/games?fields=basic%2Cschedule%2Cbaseball%2CmanualRelayUrl&upperCategoryId=kbaseball&categoryId=kbo&fromDate={fromDate}&toDate={toDate}&roundCodes=&size=500",
+        url_template=(
+            API_DOMAIN + "/schedule/games?fields=basic%2Cschedule%2Cbaseball%2CmanualRelayUrl&upperCategoryId=kbaseball&categoryId=kbo&fromDate={fromDate}&toDate={toDate}&roundCodes=&size=500"),
         content_type="json",
         default_params={"fromDate": "2026-03-01", "toDate": "2026-03-31"},
     ),
@@ -38,7 +40,8 @@ TARGETS: list[CrawlTarget] = [
     CrawlTarget(
         source="naver-sports",
         data_type="kbo-team-stats",
-        url_template="https://api-gw.sports.naver.com/statistics/categories/kbo/seasons/{seasonCode}/teams",
+        url_template=(
+              "%s/statistics/categories/kbo/seasons/{seasonCode}/teams" % API_DOMAIN),
         content_type="json",
         default_params={"seasonCode": "2026"},
     ),
@@ -46,7 +49,8 @@ TARGETS: list[CrawlTarget] = [
     CrawlTarget(
         source="naver-sports",
         data_type="kbo-team-last-ten",
-        url_template="https://api-gw.sports.naver.com/statistics/categories/kbo/seasons/{seasonCode}/teams/last-ten-games",
+        url_template=(
+              "%s/statistics/categories/kbo/seasons/{seasonCode}/teams/last-ten-games" % API_DOMAIN),
         content_type="json",
         default_params={"seasonCode": "2026"},
     ),
@@ -54,7 +58,8 @@ TARGETS: list[CrawlTarget] = [
     CrawlTarget(
         source="naver-sports",
         data_type="kbo-hitter",
-        url_template="https://api-gw.sports.naver.com/statistics/categories/kbo/seasons/{seasonCode}/players?sortField=hitterHra&sortDirection=desc&playerType=HITTER&pageSize=500",
+        url_template=(
+              "%s/statistics/categories/kbo/seasons/{seasonCode}/players?sortField=hitterHra&sortDirection=desc&playerType=HITTER&pageSize=500" % API_DOMAIN),
         content_type="json",
         default_params={"seasonCode": "2026"},
     ),
@@ -62,7 +67,8 @@ TARGETS: list[CrawlTarget] = [
     CrawlTarget(
         source="naver-sports",
         data_type="kbo-pitcher",
-        url_template="https://api-gw.sports.naver.com/statistics/categories/kbo/seasons/{seasonCode}/players?sortField=pitcherEra&sortDirection=asc&playerType=PITCHER&pageSize=500",
+        url_template=(
+              "%s/statistics/categories/kbo/seasons/{seasonCode}/players?sortField=pitcherEra&sortDirection=asc&playerType=PITCHER&pageSize=500" % API_DOMAIN),
         content_type="json",
         default_params={"seasonCode": "2026"},
     ),
