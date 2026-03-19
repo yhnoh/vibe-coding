@@ -65,9 +65,9 @@ DOWNLOAD_DELAY = 1
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    "scrapying.pipelines.ScrapyingPipeline": 300,
-#}
+ITEM_PIPELINES = {
+    "scrapying.pipelines.S3UploadPipeline": 300,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
@@ -92,3 +92,7 @@ DOWNLOAD_DELAY = 1
 
 # Set settings whose default value is deprecated to a future-proof value
 FEED_EXPORT_ENCODING = "utf-8"
+
+# S3 Upload 설정
+S3_BUCKET_NAME = "your-bucket-name"  # 실제 버킷명으로 변경
+S3_REGION_NAME = "ap-northeast-2"
