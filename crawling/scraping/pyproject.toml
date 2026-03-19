@@ -4,6 +4,17 @@ version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.14"
 dependencies = [
+    "boto3>=1.42.71",
     "scrapy>=2.14.2",
     "scrapy-playwright>=0.0.46",
 ]
+
+[dependency-groups]
+dev = [
+    "moto[s3]>=5.1.22",
+    "pytest>=9.0.2",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["scrapying"]
+testpaths = ["scrapying/tests"]
