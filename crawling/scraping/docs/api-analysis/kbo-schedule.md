@@ -304,3 +304,33 @@ Scrapy로 직접 호출 시에도 Referer 없이 200 응답을 받음.
 - `/cms/templates/*` API는 UI CMS 설정 데이터로 경기 데이터 수집에 불필요
 - `nam.veta.naver.com` 도메인 API는 광고 관련으로 경기 데이터 수집에 불필요
 - 데이터 수집에 필요한 핵심 API는 `/schedule/games`와 `/schedule/calendar` 두 가지
+
+---
+
+## 구현된 Spider
+
+| Spider | API | 파일 |
+|--------|-----|------|
+| `naversports_kbo_schedule_game` | `/schedule/games` | `spiders/baseball/naversports_kbo_schedule_game.py` |
+
+### 실행 예시
+
+```bash
+cd scrapying
+
+# 오늘 경기일정
+uv run scrapy crawl naversports_kbo_schedule_game
+
+# 특정 날짜
+uv run scrapy crawl naversports_kbo_schedule_game -a from_date=2026-03-21
+
+# 날짜 범위
+uv run scrapy crawl naversports_kbo_schedule_game -a from_date=2026-03-19 -a to_date=2026-03-21
+```
+
+### 미구현 API
+
+| API | 설명 | 비고 |
+|-----|------|------|
+| `/schedule/calendar` | 월별 캘린더 (날짜별 경기 유무) | Spider 미작성 |
+| `/schedule/season` | 시즌 정보 및 팀 목록 | Spider 미작성 |

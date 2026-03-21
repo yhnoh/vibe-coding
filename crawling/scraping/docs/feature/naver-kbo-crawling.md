@@ -1,81 +1,72 @@
 # 네이버 KBO 크롤링 작업 정리
 
 ## 목표
-네이버 스포츠 KBO 페이지에서 팀 순위, 팀 기록, 타자/투수 기록 데이터를 수집
+네이버 스포츠 KBO 페이지에서 경기일정, 팀 순위, 타자/투수 기록 데이터를 수집
 
 ---
 
-## 작업 순서
+## Spider 현황
 
-### 1단계 - Scrapy 프로젝트 셋팅
+### 디렉토리 구조
+
+```
+spiders/
+├── baseball/
+│   └── naversports_kbo_schedule_game.py   # KBO 경기일정
+├── api_capture.py                         # API URL 탐지 (도구)
+├── api_call.py                            # API 직접 호출 (테스트용)
+├── html_crawl.py                          # HTML 크롤링
+├── kbo_hitter.py                          # 타자 기록 (이동 예정)
+├── kbo_pitcher.py                         # 투수 기록 (이동 예정)
+└── kbo_team_stats.py                      # 팀 순위 (이동 예정)
+```
+
+### Spider 목록
+
+| Spider | 파일 | API | 상태 |
+|--------|------|-----|------|
+| `naversports_kbo_schedule_game` | `baseball/naversports_kbo_schedule_game.py` | `/schedule/games` | 완료 |
+| `kbo_hitter` | `kbo_hitter.py` | `/statistics/.../players?playerType=HITTER` | baseball/ 이동 예정 |
+| `kbo_pitcher` | `kbo_pitcher.py` | `/statistics/.../players?playerType=PITCHER` | baseball/ 이동 예정 |
+| `kbo_team_stats` | `kbo_team_stats.py` | `/statistics/.../teams` | baseball/ 이동 예정 |
+
+### 실행 방법
+
 ```bash
-uv run scrapy startproject scrapying .
-uv add scrapy-playwright
-uv run playwright install chromium
-```
+cd scrapying
 
-### 2단계 - settings.py 수정
-Playwright 연동 및 크롤링 속도 설정
+# 경기일정 - 오늘
+uv run scrapy crawl naversports_kbo_schedule_game
 
-```python
-DOWNLOAD_HANDLERS = {
-    "http": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
-    "https": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
-}
-TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
-ROBOTSTXT_OBEY = False
-CONCURRENT_REQUESTS_PER_DOMAIN = 1
-DOWNLOAD_DELAY = 1
-```
+# 경기일정 - 특정 날짜
+uv run scrapy crawl naversports_kbo_schedule_game -a from_date=2026-03-21
 
-### 3단계 - constants.py 작성
-크롤링할 URL을 한 곳에서 관리
-
-```python
-WebUrl (브라우저 HTML 페이지 URL)
-  └── ApiUrl (해당 페이지에서 호출하는 API URL 목록)
-```
-
-### 4단계 - api_capture 스파이더로 API URL 탐지
-```bash
-scrapy crawl api_capture -a url="https://m.sports.naver.com/kbaseball/record/kbo?seasonCode=2024&tab=teamRank"
-```
-
-### 5단계 - 탐지한 API URL을 constants.py에 등록
-
-### 6단계 - api_call 스파이더로 데이터 수집 및 파일 저장
-```bash
-scrapy crawl api_call -o output.json
+# 경기일정 - 날짜 범위
+uv run scrapy crawl naversports_kbo_schedule_game -a from_date=2026-03-19 -a to_date=2026-03-21
 ```
 
 ---
 
-## 현재 상태
+## 파이프라인
 
-### constants.py 등록 현황
+| Pipeline | 설명 | 상태 |
+|----------|------|------|
+| `LoggingPipeline` | 수집 결과를 로그로 출력 (INFO: 요약, DEBUG: raw JSON) | 사용 중 |
+| `S3UploadPipeline` | S3에 원본 업로드 | 제거됨 (필요 시 복원) |
 
-| 탭 | 웹 URL | API 등록 여부 |
-|----|--------|--------------|
-| teamRank | `/kbaseball/record/kbo?tab=teamRank` | 완료 |
-| teamRecord | `/kbaseball/record/kbo?tab=teamRecord` | 미등록 |
-| hitter | `/kbaseball/record/kbo?tab=hitter` | 미등록 |
-| pitcher | `/kbaseball/record/kbo?tab=pitcher` | 미등록 |
+---
 
-### 발견된 API URL (teamRank)
+## 네이밍 규칙
 
-| API URL | 설명 |
-|---------|------|
-| `https://api-gw.sports.naver.com/statistics/categories/kbo/seasons/2024/teams` | 팀 순위 |
-| `https://api-gw.sports.naver.com/statistics/categories/kbo/seasons/2024/teams/last-ten-games` | 최근 10경기 |
+- **파일명**: `{데이터소스}_{종목}_{데이터종류}.py` (예: `naversports_kbo_schedule_game.py`)
+- **Spider name**: 파일명과 동일 (예: `naversports_kbo_schedule_game`)
+- **클래스명**: PascalCase + Spider 접미사 (예: `NaversportsKboScheduleGameSpider`)
+- **디렉토리**: 종목별 분류 (예: `spiders/baseball/`)
 
 ---
 
 ## 남은 작업
 
-아래 3개 탭의 API URL을 탐지 후 constants.py에 추가 필요
-
-```bash
-scrapy crawl api_capture -a url="https://m.sports.naver.com/kbaseball/record/kbo?seasonCode=2024&tab=teamRecord"
-scrapy crawl api_capture -a url="https://m.sports.naver.com/kbaseball/record/kbo?seasonCode=2024&tab=hitter"
-scrapy crawl api_capture -a url="https://m.sports.naver.com/kbaseball/record/kbo?seasonCode=2024&tab=pitcher"
-```
+- [ ] 기존 `kbo_hitter`, `kbo_pitcher`, `kbo_team_stats` Spider를 `baseball/` 디렉토리로 이동 및 네이밍 통일
+- [ ] `/schedule/calendar` API Spider 추가 (월별 캘린더)
+- [ ] S3 또는 DB 저장 파이프라인 추가

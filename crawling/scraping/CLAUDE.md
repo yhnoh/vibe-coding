@@ -5,10 +5,11 @@
 
 ## 프로젝트 구조
 - `scrapying/` - Scrapy 프로젝트 루트 (scrapy 명령어는 여기서 실행)
-- `scrapying/scrapying/constants.py` - 크롤링 URL 목록 관리 (CrawlTarget + url_template)
-- `scrapying/scrapying/pipelines.py` - S3 업로드 파이프라인
-- `scrapying/scrapying/spiders/api_capture.py` - 웹페이지에서 API URL 탐지
-- `scrapying/scrapying/spiders/api_call.py` - API 직접 호출 및 데이터 수집
+- `scrapying/scrapying/constants.py` - 크롤링 URL 목록 관리 (CrawlTarget + API_DOMAIN)
+- `scrapying/scrapying/pipelines.py` - LoggingPipeline (수집 결과 로그 출력)
+- `scrapying/scrapying/spiders/baseball/` - KBO 야구 Spider
+- `scrapying/scrapying/spiders/api_capture.py` - 웹페이지에서 API URL 탐지 (도구)
+- `scrapying/scrapying/spiders/api_call.py` - API 직접 호출 (테스트용)
 - `scrapying/scrapying/spiders/html_crawl.py` - HTML 크롤링 Spider
 - `scrapying/Dockerfile` - Docker 이미지 빌드
 - `scrapying/tests/` - 테스트 코드
