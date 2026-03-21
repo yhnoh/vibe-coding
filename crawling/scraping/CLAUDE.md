@@ -64,19 +64,36 @@
   - ~/.claude/CLAUDE.md (글로벌)로 빼야 할 항목 제안
   - hooks, 스킬, MCP 등 Claude Code 설정으로 자동화할 수 있는 항목 제안
   - Claude Code 외적으로 자동화할 수 있는 방법도 제안 (CI/CD, lint 설정 등)
+
 ## 작업 마무리 규칙
-- 작업 내역을 도메인별 릴리즈 문서(`docs/releases/{도메인}.md`)에 반영한다
+- 작업 내역을 도메인별 릴리즈 문서(`docs/feature/{도메인}/{파일명}.md`)에 반영한다
 - 릴리즈 문서 목차: 개요, 기능별 유저 플로우, 작업 내역(날짜별), 프로덕션 체크리스트
 - 문서 업데이트 방식:
   - **개요**: 프로젝트 설명이 변경되면 최신 상태로 덮어쓴다
   - **기능별 유저 플로우**: 항상 최신 상태를 유지한다. 기능이 변경되면 해당 항목을 수정한다. 새 기능이면 추가한다.
   - **작업 내역**: 날짜별로 변경사항을 추가한다 (이력 유지, append)
   - **프로덕션 체크리스트**: 진행 상태를 매 세션마다 업데이트한다 (미구현→진행중→완료)
-- 단순 append가 아니라 기존 문서와 결합하여 읽는 사람이 항상 최신 상태를 파악할 수 있게 한다
+- 단순 append가 아니라 기존 문서와 결합하여 읽는 사람이 항상 최신 상태를 파악할 수 있게 한다.
 - 작업 중 발견한 기술 부채, 개선 포인트 정리
 - 다음 세션에서 이어서 할 작업 목록 정리
+- 프로젝트 전체 문서(`docs/project/`)도 변경사항이 있으면 함께 업데이트한다
+
+## 문서 구조
+
+### 비즈니스 feature 문서 (`docs/feature/{도메인}/`)
+- 비즈니스 기능 단위로 관리 (예: kbo-crawling, kbo-schedule-alert 등)
+- 목차: 개요, 기능별 유저 플로우, 작업 내역(날짜별), 프로덕션 체크리스트
+
+### 프로젝트 전체 문서 (`docs/project/`)
+- 프로젝트 공통 사항 관리
+- `architecture.md` - 시스템 구조, 컴포넌트 관계, 기술 스택
+- `environments.md` - 환경 설정 (local/dev/prod), 인프라 구성
+- `known-issues.md` - 알려진 이슈, 제약사항, 기술 부채
+
+### API 명세 (`docs/api-analysis/`)
+- 외부 API 리버스 엔지니어링 결과
 
 ## 참고 문서
 - `docs/api-analysis/naversports-kbo-api.md` - 네이버 스포츠 KBO API 명세
-- `docs/2026-03-21-kbo-crawling-work-summary.md` - 작업 내역 정리
-- `docs/2026-03-21-claude-code-automation-report.md` - 자동화 리포트
+- `docs/feature/` - 비즈니스 feature 문서
+- `docs/project/` - 프로젝트 전체 문서
