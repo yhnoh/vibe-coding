@@ -1,53 +1,131 @@
+# KBO 데이터 수집 (Scrapy)
 
+네이버 스포츠 KBO API에서 야구 데이터를 수집하는 Scrapy 프로젝트
 
-### 버전
+## 버전
+
 - Python: 3.14.3
 - uv: 0.10.11
 
+## 설치
 
-```
-├── scrapy.cfg              # 배포 설정 파일
-└── myproject/
-  ├── __init__.py
-  ├── items.py            # 스크래핑할 데이터 구조 정의
-  ├── middlewares.py      # 다운로더/스파이더 미들웨어
-  ├── pipelines.py        # 아이템 파이프라인 (데이터 처리/저장)
-  ├── settings.py         # 프로젝트 설정
-  └── spiders/            # 스파이더 디렉토리
-      ├── __init__.py
-      └── my_spider.py    # 실제 크롤링 로직
-
-```
-
-```shell
-## 프로젝트 생성
-uv run scrapy startproject [프로젝트명]
-
-## 스파이더 생성
-uv run scrapy genspider [스파이더명] [도메인]
-
-## 
-uv run scrapy crawl [스파이더명]
-
-## scrapy-playwright 프로젝트 패키지 추가 (동적 웹사이트 크롤링 지원)
-uv add scrapy-playwright
-
-## playwright 
+```bash
+uv sync
 uv run playwright install chromium
-
 ```
 
-### 네이버 스포츠
-- 경기일정: https://m.sports.naver.com/kbaseball/schedule/index?category=kbo&date=2026-03-12
-- 팀정보: https://m.sports.naver.com/kbaseball/record/kbo?tab=teamRank
-- 팀기록: https://m.sports.naver.com/kbaseball/record/kbo?seasonCode=2026&tab=teamRecord
-- 타자목록: https://m.sports.naver.com/kbaseball/record/kbo?tab=hitter
-- 팀별 타자목록: https://m.sports.naver.com/kbaseball/record/kbo?tab=hitter&teamCode=KIA
-- 투수목록: https://m.sports.naver.com/kbaseball/record/kbo?tab=pitcher
-- 팀별 투수목록: https://m.sports.naver.com/kbaseball/record/kbo?tab=pitcher&teamCode=KIA
+## 실행 방법
 
+모든 명령어는 `scrapying/` 디렉토리에서 실행해야 합니다.
 
-> [Spyder > Docs](https://docs.scrapy.org/en/latest/index.html)
+```bash
+cd scrapying
+```
 
-> 
-> 
+### 경기일정 조회
+
+```bash
+# 특정 날짜
+uv run scrapy crawl naversports_kbo_schedule_games -a from_date=2026-03-21 -a to_date=2026-03-21
+
+# 날짜 범위
+uv run scrapy crawl naversports_kbo_schedule_games -a from_date=2026-03-19 -a to_date=2026-03-21
+```
+
+| 파라미터 | 필수 | 설명 | 예시 |
+|----------|------|------|------|
+| `from_date` | Y | 조회 시작일 | `2026-03-21` |
+| `to_date` | Y | 조회 종료일 | `2026-03-21` |
+
+### 경기 기록 조회 (타자/투수 박스스코어)
+
+```bash
+uv run scrapy crawl naversports_kbo_schedule_games_record -a game_id=20260319HTHH02026
+```
+
+| 파라미터 | 필수 | 설명 | 예시 |
+|----------|------|------|------|
+| `game_id` | Y | 경기 ID | `20260319HTHH02026` |
+
+> `game_id`는 경기일정 조회 응답의 `gameId` 필드에서 확인할 수 있습니다.
+
+### 팀 순위/기록 조회
+
+```bash
+uv run scrapy crawl naversports_kbo_seasons_teams -a season=2026
+```
+
+| 파라미터 | 필수 | 설명 | 예시 |
+|----------|------|------|------|
+| `season` | Y | 시즌 연도 | `2026` |
+
+### 타자 선수 기록 조회
+
+```bash
+uv run scrapy crawl naversports_kbo_seasons_players_hitter -a season=2026 -a team_code=OB
+```
+
+| 파라미터 | 필수 | 설명 | 예시 |
+|----------|------|------|------|
+| `season` | Y | 시즌 연도 | `2026` |
+| `team_code` | Y | 팀 코드 | `OB` |
+
+### 투수 선수 기록 조회
+
+```bash
+uv run scrapy crawl naversports_kbo_seasons_players_pitcher -a season=2026 -a team_code=OB
+```
+
+| 파라미터 | 필수 | 설명 | 예시 |
+|----------|------|------|------|
+| `season` | Y | 시즌 연도 | `2026` |
+| `team_code` | Y | 팀 코드 | `OB` |
+
+## 팀 코드
+
+| 팀명 | 코드 |
+|------|------|
+| LG 트윈스 | `LG` |
+| 한화 이글스 | `HH` |
+| SSG 랜더스 | `SK` |
+| 삼성 라이온즈 | `SS` |
+| NC 다이노스 | `NC` |
+| KT 위즈 | `KT` |
+| 롯데 자이언츠 | `LT` |
+| KIA 타이거즈 | `HT` |
+| 두산 베어스 | `OB` |
+| 키움 히어로즈 | `WO` |
+
+## 로그 레벨
+
+```bash
+# INFO: 수집 요약
+uv run scrapy crawl <spider_name> -a ... -L INFO
+
+# DEBUG: raw JSON 데이터 포함
+uv run scrapy crawl <spider_name> -a ... -L DEBUG
+```
+
+## 프로젝트 구조
+
+```
+scrapying/
+├── scrapy.cfg
+└── scrapying/
+    ├── constants.py                          # API_DOMAIN, CrawlTarget
+    ├── items.py                              # CrawledItem 정의
+    ├── pipelines.py                          # LoggingPipeline
+    ├── settings.py                           # Scrapy 설정
+    └── spiders/
+        └── baseball/
+            ├── naversports_kbo_schedule_games.py           # 경기일정
+            ├── naversports_kbo_schedule_games_record.py    # 경기 기록
+            ├── naversports_kbo_seasons_teams.py            # 팀 순위/기록
+            ├── naversports_kbo_seasons_players_hitter.py   # 타자 선수 기록
+            └── naversports_kbo_seasons_players_pitcher.py  # 투수 선수 기록
+```
+
+## 참고 문서
+
+- [API 명세](docs/api-analysis/naversports-kbo-api.md)
+- [Scrapy 공식 문서](https://docs.scrapy.org/en/latest/index.html)
