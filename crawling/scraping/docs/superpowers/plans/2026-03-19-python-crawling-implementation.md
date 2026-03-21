@@ -129,7 +129,7 @@ uv run scrapy crawl api_call -a url="{탐지된_API_URL}" -o schedule_sample.jso
 - [ ] **Step 4: 커밋**
 
 ```bash
-git add docs/api-analysis/kbo-schedule.md schedule_sample.json
+git add summary/api-analysis/kbo-schedule.md schedule_sample.json
 git commit -m "docs: 경기일정 API 탐지 및 응답 구조 분석"
 ```
 
@@ -170,7 +170,7 @@ uv run scrapy crawl api_call -a url="{탐지된_API_URL}" -o team_sample.json
 - [ ] **Step 5: 커밋**
 
 ```bash
-git add docs/api-analysis/kbo-team.md team_sample.json
+git add summary/api-analysis/kbo-team.md team_sample.json
 git commit -m "docs: 팀정보/팀기록 API 탐지 및 응답 구조 분석"
 ```
 
@@ -218,7 +218,7 @@ uv run scrapy crawl api_call -a url="{탐지된_API_URL}" -o player_sample.json
 - [ ] **Step 6: 커밋**
 
 ```bash
-git add docs/api-analysis/kbo-player.md player_sample.json
+git add summary/api-analysis/kbo-player.md player_sample.json
 git commit -m "docs: 타자/투수 목록 API 탐지 및 응답 구조 분석"
 ```
 

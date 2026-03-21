@@ -31,7 +31,6 @@
 | **아키텍처** | `docs/project/architecture.md` | 구조 변경 시 최신화 |
 | **환경 설정** | `docs/project/environments.md` | 설정 변경 시 최신화 |
 | **알려진 이슈** | `docs/project/known-issues.md` | 발견 시 추가, 해결 시 업데이트 |
-| **API 명세** | `docs/api-analysis/` | 엔드포인트 추가/변경 시 최신화 |
 
 ### feature 문서 목차 및 업데이트 규칙
 
