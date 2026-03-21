@@ -1,5 +1,4 @@
 from collections.abc import AsyncIterator, Iterator
-from datetime import datetime, timezone, timedelta
 from typing import Any
 
 import scrapy
@@ -9,12 +8,11 @@ from scrapying.constants import API_DOMAIN
 from scrapying.items import CrawledItem
 
 
-class NaversportsKboTeamSpider(scrapy.Spider):
+class NaversportsKboSeasonsTeamsSpider(scrapy.Spider):
     """KBO 팀 순위 및 기록을 수집하는 스파이더.
 
     실행 방법:
-        scrapy crawl naversports_kbo_team                      # 현재 시즌
-        scrapy crawl naversports_kbo_team -a season=2025        # 특정 시즌
+        scrapy crawl naversports_kbo_seasons_teams -a season=2026
 
     동작 흐름:
         start() → /statistics/categories/kbo/seasons/{season}/teams API 호출
@@ -24,15 +22,15 @@ class NaversportsKboTeamSpider(scrapy.Spider):
         LoggingPipeline → 로그 출력
     """
 
-    name: str = "naversports_kbo_team"
+    name: str = "naversports_kbo_seasons_teams"
 
     season: str
 
     def __init__(self, season: str | None = None, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        kst: timezone = timezone(timedelta(hours=9))
-        current_year: str = str(datetime.now(kst).year)
-        self.season = season or current_year
+        if not season:
+            raise ValueError("season 파라미터가 필요합니다. (예: -a season=2026)")
+        self.season = season
 
     async def start(self) -> AsyncIterator[scrapy.Request]:
         url: str = f"{API_DOMAIN}/statistics/categories/kbo/seasons/{self.season}/teams"
@@ -50,7 +48,7 @@ class NaversportsKboTeamSpider(scrapy.Spider):
 
         item: CrawledItem = CrawledItem()
         item["source"] = "naversports"
-        item["data_type"] = "naversports_kbo_team"
+        item["data_type"] = "naversports_kbo_seasons_teams"
         item["content_type"] = "json"
         item["raw_data"] = response.text
         yield item
