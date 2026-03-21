@@ -4,60 +4,46 @@
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 
 
-from datetime import datetime, timezone, timedelta
+import json
+import logging
 
-import boto3
 from itemadapter import ItemAdapter
 
 from scrapying.items import CrawledItem
 
+logger = logging.getLogger(__name__)
 
-class S3UploadPipeline:
-    """CrawledItem을 S3에 원본 그대로 업로드하는 Pipeline.
 
-    S3 경로 규칙: raw/{source}/{data_type}/{yyyy}/{MM}/{dd}/{timestamp}.{ext}
+class LoggingPipeline:
+    """CrawledItem을 로그로 출력하는 Pipeline.
+
+    JSON 데이터는 파싱하여 요약 정보를 로그로 출력한다.
+    나중에 S3UploadPipeline 등으로 교체 가능.
     """
-
-    def __init__(self, bucket_name, region_name="ap-northeast-2"):
-        self.bucket_name = bucket_name
-        self.region_name = region_name
-        self.s3_client = None
-
-    @classmethod
-    def from_crawler(cls, crawler):
-        return cls(
-            bucket_name=crawler.settings.get("S3_BUCKET_NAME"),
-            region_name=crawler.settings.get("S3_REGION_NAME", "ap-northeast-2"),
-        )
-
-    def open_spider(self, spider):
-        self.s3_client = boto3.client("s3", region_name=self.region_name)
 
     def process_item(self, item, spider):
         if not isinstance(item, CrawledItem):
             return item
 
+        # Spyder에서 수집된 CrawledItem을 로그로 출력
         adapter = ItemAdapter(item)
         source = adapter["source"]
         data_type = adapter["data_type"]
         content_type = adapter["content_type"]
         raw_data = adapter["raw_data"]
 
-        ext = "json" if content_type == "json" else "html"
-        kst = timezone(timedelta(hours=9))
-        now = datetime.now(kst)
-        timestamp = int(now.timestamp())
-
-        key = f"raw/{source}/{data_type}/{now.strftime('%Y/%m/%d')}/{timestamp}.{ext}"
-
-        self.s3_client.put_object(
-            Bucket=self.bucket_name,
-            Key=key,
-            Body=raw_data.encode("utf-8"),
-            ContentType="application/json" if ext == "json" else "text/html",
-        )
-
-        if spider:
-            spider.logger.info(f"S3 업로드 완료: s3://{self.bucket_name}/{key}")
+        if content_type == "json":
+            data = json.loads(raw_data)
+            spider.logger.info(
+                f"[{source}/{data_type}] JSON 수집 완료 | "
+                f"keys={list(data.get('result', data).keys())}"
+            )
+            # raw_data 전체를 DEBUG 레벨로 출력
+            spider.logger.debug(f"[{source}/{data_type}] raw_data:\n{json.dumps(data, indent=2, ensure_ascii=False)[:2000]}")
+        else:
+            spider.logger.info(
+                f"[{source}/{data_type}] HTML 수집 완료 | "
+                f"length={len(raw_data)}"
+            )
 
         return item
