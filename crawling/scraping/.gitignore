@@ -30,5 +30,8 @@ Thumbs.db
 .env.*
 
 
+# 학습 리포트 (개인용)
+docs/learning/
+
 ## MCP
 .playwright-mcp
