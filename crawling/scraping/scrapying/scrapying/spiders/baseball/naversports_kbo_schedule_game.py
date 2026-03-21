@@ -1,6 +1,9 @@
+from collections.abc import AsyncIterator, Iterator
 from datetime import datetime, timezone, timedelta
+from typing import Any
 
 import scrapy
+from scrapy.http import TextResponse
 
 from scrapying.constants import API_DOMAIN
 from scrapying.items import CrawledItem
@@ -22,20 +25,23 @@ class NaversportsKboScheduleGameSpider(scrapy.Spider):
         LoggingPipeline → 로그 출력
     """
 
-    name = "naversports_kbo_schedule_game"
+    name: str = "naversports_kbo_schedule_game"
 
-    def __init__(self, from_date=None, to_date=None, **kwargs):
+    from_date: str
+    to_date: str
+
+    def __init__(self, from_date: str | None = None, to_date: str | None = None, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        kst = timezone(timedelta(hours=9))
-        today = datetime.now(kst).strftime("%Y-%m-%d")
+        kst: timezone = timezone(timedelta(hours=9))
+        today: str = datetime.now(kst).strftime("%Y-%m-%d")
         self.from_date = from_date or today
         self.to_date = to_date or self.from_date
 
-    async def start(self):
-        from_date = self.from_date
-        to_date = self.to_date
+    async def start(self) -> AsyncIterator[scrapy.Request]:
+        from_date: str = self.from_date
+        to_date: str = self.to_date
 
-        params = {
+        params: dict[str, str] = {
             "fields": "basic,schedule,baseball,manualRelayUrl",
             "upperCategoryId": "kbaseball",
             "categoryId": "kbo",
@@ -44,22 +50,22 @@ class NaversportsKboScheduleGameSpider(scrapy.Spider):
             "roundCodes": "",
             "size": "500",
         }
-        query = "&".join(f"{k}={v}" for k, v in params.items())
-        url = f"{API_DOMAIN}/schedule/games?{query}"
+        query: str = "&".join(f"{k}={v}" for k, v in params.items())
+        url: str = f"{API_DOMAIN}/schedule/games?{query}"
 
         yield scrapy.Request(url=url, callback=self.parse, cb_kwargs={"from_date": from_date})
 
-    def parse(self, response, from_date):
-        content_type = response.headers.get("Content-Type", b"").decode()
+    def parse(self, response: TextResponse, from_date: str) -> Iterator[CrawledItem]:
+        content_type: str = response.headers.get("Content-Type", b"").decode()
 
         if "json" not in content_type:
             self.logger.warning(f"예상하지 못한 Content-Type: {content_type}")
             return
 
-        period = from_date if from_date == self.to_date else f"{from_date} ~ {self.to_date}"
+        period: str = from_date if from_date == self.to_date else f"{from_date} ~ {self.to_date}"
         self.logger.info(f"조회 기간: {period}")
 
-        item = CrawledItem()
+        item: CrawledItem = CrawledItem()
         item["source"] = "naversports"
         item["data_type"] = "naversports_kbo_schedule_game"
         item["content_type"] = "json"
