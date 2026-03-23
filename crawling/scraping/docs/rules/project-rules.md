@@ -1,26 +1,3 @@
-# 프로젝트 규칙
-
-## Scrapy Spider
-
-- 파라미터는 전부 필수값. 기본값 사용 금지. 미지정 시 ValueError 발생
-- parse()에서 데이터를 가공하지 않는다. 원본 JSON을 그대로 CrawledItem에 전달
-- URL 쿼리 파라미터는 dict로 관리 (URL 인코딩 문자열 직접 작성 금지)
-- docstring에 실행 방법과 동작 흐름 작성
-
-## FastAPI
-
-- 엔드포인트에 response_model 필수 (Pydantic 모델)
-- APIRouter로 도메인별 분리
-
-## 네이밍 규칙
-
-- Spider 파일명: `{데이터소스}_{종목}_{API경로}.py` (예: `naversports_kbo_schedule_games.py`)
-- Spider name: 파일명과 동일
-- Spider 클래스명: PascalCase + Spider 접미사
-- CrawledItem의 data_type: Spider name과 동일
-- CrawledItem의 source: 데이터소스명 (예: `naversports`)
-- Spider는 종목별 디렉토리에 배치 (`spiders/baseball/`, `spiders/soccer/` 등)
-
 ## 문서 업데이트 규칙
 
 작업 완료 시 아래 문서 구조에 따라 변경사항을 반영한다.
@@ -45,3 +22,35 @@
 
 - CLAUDE.md는 함부로 수정하지 않는다
 - 수정이 필요하면 제안만 하고, 사용자 승인 후 수정한다
+
+## 커밋 규칙
+
+- 하나의 기능/변경 단위가 완료되면 커밋을 제안한다
+- 커밋 메시지는 conventional commits 형식을 따른다
+- 형식: `<타입>: <제목>`
+
+| 타입 | 사용 시점 | 예시 |
+|---|---|---|
+| feat | 새 기능 추가 | `feat: 로그인 기능 추가` |
+| fix | 버그 수정 | `fix: 토큰 만료 오류 수정` |
+| hotfix | 운영 긴급 버그 수정 | `hotfix: 인증 우회 취약점 수정` |
+| refactor | 기능 변경 없는 코드 개선 | `refactor: 서비스 레이어 분리` |
+| docs | 문서 변경 | `docs: API 명세 업데이트` |
+| chore | 설정, 의존성 변경 | `chore: pytest 의존성 추가` |
+| test | 테스트 추가·수정 | `test: 회원가입 단위 테스트 추가` |
+| revert | 이전 커밋 되돌리기 | `revert: feat: 로그인 기능 추가` |
+
+
+## README 동기화 규칙
+
+아래 변경이 발생하면 README.md를 함께 업데이트한다.
+해당 섹션이 없으면 새로 추가한다.
+
+| 변경 사항 | README 업데이트 위치 |
+|---|---|
+| 의존성 추가·제거 | 기술 스택 섹션 |
+| 프로젝트 구조 변경 | 프로젝트 구조 섹션 |
+| 엔드포인트 추가·변경·삭제 | API 엔드포인트 섹션 |
+| 환경변수 추가·변경 | 환경변수 섹션 |
+| 실행 방법 변경 | 시작하기 섹션 |
+| 배포 방식 변경 | 배포 섹션 |
